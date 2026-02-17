@@ -47,18 +47,18 @@ def main():
             }
         )
         print("🔄 Updated existing record")
-    else:
-        notion.pages.create(
-            parent={"database_id": daily_db_id},
-            properties={
-                "Date": {"rich_text": [{"text": {"content": today}}]},
-                "Kcal daily": {"number": sums["kcal"]},
-                "Prot daily": {"number": sums["prot"]},
-                "Fat daily": {"number": sums["fat"]},
-                "Carb daily": {"number": sums["carb"]},
-            }
-        )
-        print("✅ Created new record")
+else:
+    notion.pages.create(
+        parent={"database_id": daily_db_id},
+        properties={
+            "Date": {"title": [{"text": {"content": today}}]},  # ← виправлено тут
+            "Kcal daily": {"number": sums["kcal"]},
+            "Prot daily": {"number": sums["prot"]},
+            "Fat daily": {"number": sums["fat"]},
+            "Carb daily": {"number": sums["carb"]},
+        }
+    )
+    print("✅ Created new record")
 
     print("🎉 Done!")
 
