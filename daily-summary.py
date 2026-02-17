@@ -13,15 +13,18 @@ def has_meals_today():
     """Перевірити чи є записи в Daily log за сьогодні"""
     today = datetime.now().strftime("%Y-%m-%d")
     
-    results = notion.databases.query(
-        database_id=daily_log_db,
-        filter={
-            "property": "Date",
-            "date": {"equals": today}
-        }
-    )
-    
-    return len(results["results"]) > 0
+    try:
+        results = notion.databases.query(
+            database_id=daily_log_db,
+            filter={
+                "property": "Date",
+                "date": {"equals": today}
+            }
+        )
+        return len(results.get("results", [])) > 0
+    except Exception as e:
+        print(f"⚠️ Error checking meals: {e}")
+        return False
 
 def get_today_sums():
     """Читати готові суми з Progress bar"""
@@ -33,18 +36,22 @@ def get_today_sums():
         return {"kcal": 0, "prot": 0, "fat": 0, "carb": 0}
     
     # Читати з Progress bar сторінки
-    page = notion.pages.retrieve(page_id=progress_bar_id)
-    props = page["properties"]
-    
-    sums = {
-        "kcal": props.get("Kcal sum", {}).get("number", 0) or 0,
-        "prot": props.get("Prot sum", {}).get("number", 0) or 0,
-        "fat":  props.get("Fat sum", {}).get("number", 0) or 0,
-        "carb": props.get("Carb sum", {}).get("number", 0) or 0,
-    }
-    
-    print(f"📊 Progress bar sums: {sums}")
-    return sums
+    try:
+        page = notion.pages.retrieve(page_id=progress_bar_id)
+        props = page["properties"]
+        
+        sums = {
+            "kcal": props.get("Kcal sum", {}).get("number", 0) or 0,
+            "prot": props.get("Prot sum", {}).get("number", 0) or 0,
+            "fat":  props.get("Fat sum", {}).get("number", 0) or 0,
+            "carb": props.get("Carb sum", {}).get("number", 0) or 0,
+        }
+        
+        print(f"📊 Progress bar sums: {sums}")
+        return sums
+    except Exception as e:
+        print(f"⚠️ Error reading Progress bar: {e}")
+        return {"kcal": 0, "prot": 0, "fat": 0, "carb": 0}
 
 def main():
     today = datetime.now().strftime("%Y-%m-%d")
@@ -57,7 +64,7 @@ def main():
         database_id=daily_archive_db,
         filter={
             "property": "Date",
-            "rich_text": {"equals": today}
+            "title": {"equals": today}  # ← ВИПРАВЛЕНО: було rich_text
         }
     )
     
@@ -77,7 +84,7 @@ def main():
         notion.pages.create(
             parent={"database_id": daily_archive_db},
             properties={
-                "Date": {"rich_text": [{"text": {"content": today}}]},
+                "Date": {"title": [{"text": {"content": today}}]},  # ← ВИПРАВЛЕНО: було rich_text
                 "Kcal daily": {"number": round(sums["kcal"])},
                 "Prot daily": {"number": round(sums["prot"])},
                 "Fat daily": {"number": round(sums["fat"])},
