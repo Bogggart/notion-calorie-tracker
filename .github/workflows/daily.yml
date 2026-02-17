@@ -12,7 +12,7 @@ jobs:
       with:
         python-version: '3.11'
     - name: Install notion-client
-      run: pip install notion-client
+      run: pip install notion-client==2.2.1
     - name: Run script
       env:
         NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
