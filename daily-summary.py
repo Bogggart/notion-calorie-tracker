@@ -8,7 +8,6 @@ notion = Client(auth=os.getenv("NOTION_TOKEN"))
 daily_db_id = os.getenv("DAILY_SUM_ARCHIVE_DB")
 
 def get_today_sums():
-    # тимчасовий мок – потім замінимо на запит до Data Store
     return {
         "kcal": 2145,
         "prot": 132,
@@ -22,23 +21,26 @@ def main():
     sums = get_today_sums()
     print(f"📊 Daily sums: {sums}")
 
-    # ВАЖЛИВО: передаємо параметри як один dict
-    results = notion.databases.query({
-        "database_id": daily_db_id,
-        "filter": {
+    # ВИПРАВЛЕНО: іменовані параметри замість dict
+    results = notion.databases.query(
+        database_id=daily_db_id,
+        filter={
             "property": "Date",
             "rich_text": {"equals": today},
-        },
-    })
+        }
+    )
 
     if results["results"]:
         page_id = results["results"][0]["id"]
-        notion.pages.update(page_id, properties={
-            "Kcal daily": {"number": sums["kcal"]},
-            "Prot daily": {"number": sums["prot"]},
-            "Fat daily": {"number": sums["fat"]},
-            "Carb daily": {"number": sums["carb"]},
-        })
+        notion.pages.update(
+            page_id=page_id,
+            properties={
+                "Kcal daily": {"number": sums["kcal"]},
+                "Prot daily": {"number": sums["prot"]},
+                "Fat daily": {"number": sums["fat"]},
+                "Carb daily": {"number": sums["carb"]},
+            }
+        )
         print("🔄 Updated existing record")
     else:
         notion.pages.create(
@@ -49,11 +51,11 @@ def main():
                 "Prot daily": {"number": sums["prot"]},
                 "Fat daily": {"number": sums["fat"]},
                 "Carb daily": {"number": sums["carb"]},
-            },
+            }
         )
         print("✅ Created new record")
 
-    print("🎉 Done")
+    print("🎉 Done!")
 
 if __name__ == "__main__":
     main()
