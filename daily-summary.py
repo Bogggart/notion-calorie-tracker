@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 import os
 from datetime import datetime
 from notion_client import Client
@@ -6,11 +6,6 @@ from notion_client import Client
 # ініціалізація
 notion = Client(auth=os.getenv("NOTION_TOKEN"))
 daily_db_id = os.getenv("DAILY_SUM_ARCHIVE_DB")
-
-# Після рядка 7 (після отримання змінних)
-print(f"🔍 DEBUG: NOTION_TOKEN length: {len(os.getenv('NOTION_TOKEN', ''))}")
-print(f"🔍 DEBUG: DAILY_DB_ID length: {len(daily_db_id or '')}")
-print(f"🔍 DEBUG: DAILY_DB_ID value: '{daily_db_id}'")
 
 def get_today_sums():
     return {
@@ -26,12 +21,12 @@ def main():
     sums = get_today_sums()
     print(f"📊 Daily sums: {sums}")
 
-    # ВИПРАВЛЕНО: іменовані параметри замість dict
+    # Запит до бази даних
     results = notion.databases.query(
         database_id=daily_db_id,
         filter={
             "property": "Date",
-            "rich_text": {"equals": today},
+            "title": {"equals": today},
         }
     )
 
@@ -47,19 +42,18 @@ def main():
             }
         )
         print("🔄 Updated existing record")
-else:
-    notion.pages.create(
-        parent={"database_id": daily_db_id},
-        properties={
-            "Date": {"title": [{"text": {"content": today}}]},  # ← виправлено тут
-            "Kcal daily": {"number": sums["kcal"]},
-            "Prot daily": {"number": sums["prot"]},
-            "Fat daily": {"number": sums["fat"]},
-            "Carb daily": {"number": sums["carb"]},
-        }
-    )
-    
-    print("✅ Created new record")
+    else:
+        notion.pages.create(
+            parent={"database_id": daily_db_id},
+            properties={
+                "Date": {"title": [{"text": {"content": today}}]},
+                "Kcal daily": {"number": sums["kcal"]},
+                "Prot daily": {"number": sums["prot"]},
+                "Fat daily": {"number": sums["fat"]},
+                "Carb daily": {"number": sums["carb"]},
+            }
+        )
+        print("✅ Created new record")
 
     print("🎉 Done!")
 
