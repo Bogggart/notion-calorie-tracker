@@ -1,7 +1,7 @@
 name: Daily Calorie Summary
 on:
   schedule:
-    - cron: '59 20 * * *'  # 23:59 EET
+    - cron: '59 20 * * *'
   workflow_dispatch:
 jobs:
   summary:
@@ -11,8 +11,10 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    - run: pip install notion-client
-    - run: python daily-summary.py
+    - name: Install notion-client
+      run: pip install notion-client
+    - name: Run script
       env:
         NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
         DAILY_SUM_ARCHIVE_DB: ${{ secrets.DAILY_SUM_ARCHIVE_DB }}
+      run: python daily-summary.py
