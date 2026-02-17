@@ -1,31 +1,18 @@
 name: Daily Calorie Summary
-
 on:
   schedule:
-    - cron: '59 20 * * *'  # 23:59 EET (Київ час)
-  workflow_dispatch:        # Ручний запуск для тестів
-
+    - cron: '59 20 * * *'  # 23:59 EET
+  workflow_dispatch:
 jobs:
-  create-daily-archive:
+  summary:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Setup Python
-      uses: actions/setup-python@v5
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
-    - name: Install dependencies
-      run: |
-        pip install notion-client requests
-    
-    - name: Run daily summary
+    - run: pip install notion-client
+    - run: python daily-summary.py
       env:
         NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-        DAILY_ARCHIVE_DB: ${{ secrets.DAILY_ARCHIVE_DB }}
-      run: python daily-summary.py
-      
-    - name: Show success
-      run: echo "✅ Daily Archive created!"
+        DAILY_SUM_ARCHIVE_DB: ${{ secrets.DAILY_SUM_ARCHIVE_DB }}
