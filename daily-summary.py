@@ -58,6 +58,7 @@ else:
             "Carb daily": {"number": sums["carb"]},
         }
     )
+    
     print("✅ Created new record")
 
     print("🎉 Done!")
