@@ -3,51 +3,44 @@ import os
 from datetime import datetime
 from notion_client import Client
 
-# Ініціалізація Notion
+# ініціалізація
 notion = Client(auth=os.getenv("NOTION_TOKEN"))
-daily_db_id = os.getenv("DAILY_SUM_ARCHIVE_DB")  # Твоя нова назва
+daily_db_id = os.getenv("DAILY_SUM_ARCHIVE_DB")
 
 def get_today_sums():
-    """Mock Data Store - замінимо на реальний API"""
+    # тимчасовий мок – потім замінимо на запит до Data Store
     return {
         "kcal": 2145,
         "prot": 132,
         "fat": 65,
-        "carb": 285
+        "carb": 285,
     }
 
 def main():
-    # Сьогодні (text формат для твоєї БД)
     today = datetime.now().strftime("%Y-%m-%d")
     print(f"📅 Processing {today}")
-    
     sums = get_today_sums()
-    print(f"📊 Daily sums: Kcal={sums['kcal']}, Prot={sums['prot']}, Fat={sums['fat']}, Carb={sums['carb']}")
-    
-    # Шукаємо існуючий запис
-    results = notion.databases.query(
-        database_id=daily_db_id,
-        filter={
+    print(f"📊 Daily sums: {sums}")
+
+    # ВАЖЛИВО: передаємо параметри як один dict
+    results = notion.databases.query({
+        "database_id": daily_db_id,
+        "filter": {
             "property": "Date",
-            "rich_text": {"equals": today}  # text property
-        }
-    )
-    
+            "rich_text": {"equals": today},
+        },
+    })
+
     if results["results"]:
-        # Оновлюємо існуючий
-        page_id = results["results"][0]["id"].replace("-", "")
-        notion.pages.update(
-            page_id,
-            properties={
-                "Kcal daily": {"number": sums["kcal"]},
-                "Prot daily": {"number": sums["prot"]},
-                "Fat daily": {"number": sums["fat"]},
-                "Carb daily": {"number": sums["carb"]}
-            }
-        )
-        print("🔄 Updated existing Daily sum archive")
+        page_id = results["results"][0]["id"]
+        notion.pages.update(page_id, properties={
+            "Kcal daily": {"number": sums["kcal"]},
+            "Prot daily": {"number": sums["prot"]},
+            "Fat daily": {"number": sums["fat"]},
+            "Carb daily": {"number": sums["carb"]},
+        })
+        print("🔄 Updated existing record")
     else:
-        # Створюємо новий
         notion.pages.create(
             parent={"database_id": daily_db_id},
             properties={
@@ -55,12 +48,12 @@ def main():
                 "Kcal daily": {"number": sums["kcal"]},
                 "Prot daily": {"number": sums["prot"]},
                 "Fat daily": {"number": sums["fat"]},
-                "Carb daily": {"number": sums["carb"]}
-            }
+                "Carb daily": {"number": sums["carb"]},
+            },
         )
-        print("✅ Created new Daily sum archive record")
-    
-    print("🎉 Daily summary complete!")
+        print("✅ Created new record")
+
+    print("🎉 Done")
 
 if __name__ == "__main__":
     main()
