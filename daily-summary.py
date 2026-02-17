@@ -7,6 +7,11 @@ from notion_client import Client
 notion = Client(auth=os.getenv("NOTION_TOKEN"))
 daily_db_id = os.getenv("DAILY_SUM_ARCHIVE_DB")
 
+# Після рядка 7 (після отримання змінних)
+print(f"🔍 DEBUG: NOTION_TOKEN length: {len(os.getenv('NOTION_TOKEN', ''))}")
+print(f"🔍 DEBUG: DAILY_DB_ID length: {len(daily_db_id or '')}")
+print(f"🔍 DEBUG: DAILY_DB_ID value: '{daily_db_id}'")
+
 def get_today_sums():
     return {
         "kcal": 2145,
