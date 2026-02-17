@@ -12,9 +12,11 @@ jobs:
       with:
         python-version: '3.11'
     - name: Install notion-client
-      run: pip install notion-client==2.2.1
+      run: pip install notion-client
     - name: Run script
       env:
         NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        PROGRESS_BAR_ID: ${{ secrets.PROGRESS_BAR_ID }}
+        DAILY_LOG_DB: ${{ secrets.DAILY_LOG_DB }}
         DAILY_SUM_ARCHIVE_DB: ${{ secrets.DAILY_SUM_ARCHIVE_DB }}
       run: python daily-summary.py
