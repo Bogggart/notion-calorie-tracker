@@ -5,7 +5,7 @@ from notion_client import Client
 
 # Ініціалізація
 notion = Client(auth=os.getenv("NOTION_TOKEN"))
-progress_bar_id = os.getenv("PROGRESS_BAR_ID")  # ID сторінки Progress bar
+progress_bar_id = os.getenv("PROGRESS_BAR_ID")
 daily_log_db = os.getenv("DAILY_LOG_DB")
 daily_archive_db = os.getenv("DAILY_SUM_ARCHIVE_DB")
 
@@ -30,12 +30,10 @@ def get_today_sums():
     """Читати готові суми з Progress bar"""
     today = datetime.now().strftime("%Y-%m-%d")
     
-    # Перевірити чи є їжа за сьогодні
     if not has_meals_today():
         print("⚠️ No meals today, using zeros")
         return {"kcal": 0, "prot": 0, "fat": 0, "carb": 0}
     
-    # Читати з Progress bar сторінки
     try:
         page = notion.pages.retrieve(page_id=progress_bar_id)
         props = page["properties"]
@@ -59,12 +57,12 @@ def main():
     
     sums = get_today_sums()
     
-    # Записати в Daily sum archive
+    # ✅ ЗМІНА: Date як DATE property, а не text/title
     results = notion.databases.query(
         database_id=daily_archive_db,
         filter={
             "property": "Date",
-            "title": {"equals": today}  # ← ВИПРАВЛЕНО: було rich_text
+            "date": {"equals": today}  # ← Date filter
         }
     )
     
@@ -84,7 +82,8 @@ def main():
         notion.pages.create(
             parent={"database_id": daily_archive_db},
             properties={
-                "Date": {"title": [{"text": {"content": today}}]},  # ← ВИПРАВЛЕНО: було rich_text
+                # ✅ ЗМІНА: Date як DATE, а не rich_text/title
+                "Date": {"date": {"start": today}},
                 "Kcal daily": {"number": round(sums["kcal"])},
                 "Prot daily": {"number": round(sums["prot"])},
                 "Fat daily": {"number": round(sums["fat"])},
